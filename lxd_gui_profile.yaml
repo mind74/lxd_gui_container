@@ -1,6 +1,7 @@
 config:
   security.devlxd: false
-description: LXD GUI profile
+  security.nesting: "true"
+  description: LXD GUI profile
 devices:
   gpu:
     type: gpu

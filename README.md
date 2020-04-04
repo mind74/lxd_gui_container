@@ -79,7 +79,12 @@ The "attach" tool will:
 
 1. start the container, if needed
 2. using SSH as transport, start the xpra server
-3. using Unix socket as transport, attach xpra client
+3. using SSH as transport, attach xpra client
+
+The "run" tool will:
+1. start the container and attach xpra client, if needed
+2. using SSH as transport, run the command in container
+
 
 The "map" tool will:
 
@@ -123,6 +128,15 @@ There are several options for customizing the look of the window to distinguish 
 * window icon. For example, `--window-icon=/usr/share/icons/xpra.png` (NOTE: this is a client side path)
 * window title. For example, `--title="my-container-app on @client-machine@"`
 
+## xpra_configs file
+lista of xpra parameters to be applied to containers when attached
+for example
+```env
+my-container=--border=#FF0003,4
+my-container2=--border=#0066ff,4
+my-container3=--border=#76FF00,4
+```
+
 ## Examples
 1. Create the container
 
@@ -136,7 +150,13 @@ examples/cloud-config/firefox.yaml
 
 2. Start app and attach to its display
 
- `$ ./attach_app.sh my-container "firefox https://xkcd.com/"`
+ <!-- `$ ./attach_app.sh my-container "firefox https://xkcd.com/"` -->
+ `$ ./xpra_attach.sh my-container <xpra params>`
+ Notes:
+  * if no xpra params are passed, the tool will search for a line with `my-container=<xpra params>`
+
+2. Running an app in container
+`$ ./xpra_run_app.sh xpra-work firefox`
 
 ## Creating a new container
 

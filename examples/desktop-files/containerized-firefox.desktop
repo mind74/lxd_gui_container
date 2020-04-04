@@ -4,7 +4,7 @@ Name=Firefox (containerized)
 Comment=Browse the World Wide Web
 GenericName=Web Browser
 Keywords=Internet;WWW;Browser;Web;Explorer
-Exec=attach_app.sh firefox "firefox --class=containerized-firefox %u"
+Exec=sh -c '$HOME/xpra_containers/xpra_run_app.sh xpra-untrusted firefox --class=containerized-firefox %u'
 Terminal=false
 X-MultipleArgs=false
 Type=Application

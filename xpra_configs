@@ -1,0 +1,3 @@
+xpra-untrusted=--border=#FF0003,4
+xpra-work=--border=#0066ff,4
+xpra-dev=--border=#76FF00,4

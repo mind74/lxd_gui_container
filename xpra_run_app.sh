@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Wrapper to attach to running GUI app. Run on host.
+# Wrapper to run an app. Run on host.
 
 
 # number of times to connect to xpra server
@@ -21,11 +21,6 @@ function print_err() {
   echo "[!] $*"
 }
 
-function cleanup() {
-  xpra stop ssh:ubuntu@"${container_ip}""${display_num}"
-  # lxc exec "${CONTAINER_NAME}" -- sudo -u ubuntu -i xauth remove ":${display_num}"
-}
-
 if [ $# -lt 1 ]; then
     usage
     exit
@@ -33,8 +28,8 @@ fi
 
 readonly CONTAINER_NAME=$1
 shift
-# readonly APP_CMDLINE=$1
-# shift
+readonly APP_CMDLINE=$1
+shift
 
 
 # Check for running container #
@@ -67,18 +62,8 @@ print_status "Searching for active xpra session"
 display_num=$(ssh ubuntu@"${container_ip}" xpra list | grep -oP -m 1 ":\d{2,}")
 echo "$display_num"
 if [ "$display_num" == "" ] ; then
-  print_status "No active xpra session found!"
-  display_num=$((${RANDOM} % 1000))
-  display_num=":$display_num"
-  # display_num=":100"
-  print_status "Starting xpra server in ${container_ip} , using DISPLAY $display_num"
-  ssh ubuntu@"${container_ip}" xpra start $display_num \
-      --start-via-proxy=no \
-      --attach=no \
-      --mdns=no \
-      --html=off || exit 1
-
-  print_status "Waiting for Xpra server"
+  "$(dirname $0)/xpra_attach.sh" "${CONTAINER_NAME}"  &
+  sleep 5
 
   ssh ubuntu@"${container_ip}" bash -c "'
   declare -i try_count=0
@@ -90,16 +75,11 @@ if [ "$display_num" == "" ] ; then
       fi
   done
   '"
-
-  if  ! ssh ubuntu@"${container_ip}" xpra list | grep -o "$display_num" ; then
-    print_err "Failed to connect to xpra server."
-    exit 1
-  fi
-else  
-  print_status "using existing session $display_num "
+fi
+display_num=$(ssh ubuntu@"${container_ip}" xpra list | grep -oP -m 1 ":\d{2,}")
+if [ "$display_num" == "" ] ; then
+  print_err "No active xpra session found!"
+  exit 1
 fi
 
-trap cleanup EXIT
-
-echo "xpra attach ssh:ubuntu@"${container_ip}"$display_num "$@" --session-name=$CONTAINER_NAME || exit 1"
-xpra attach ssh:ubuntu@"${container_ip}"$display_num "$@" --session-name=$CONTAINER_NAME || exit 1
+ssh ubuntu@"${container_ip}" "DISPLAY=$display_num $APP_CMDLINE"  &

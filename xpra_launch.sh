@@ -60,26 +60,11 @@ fi
 
 print_status "Searching for active xpra session"
 display_num=$(ssh ubuntu@"${container_ip}" xpra list | grep -oP -m 1 ":\d{2,}")
-echo "$display_num"
 if [ "$display_num" == "" ] ; then
-  "$(dirname $0)/xpra_attach.sh" "${CONTAINER_NAME}"  &
-  sleep 5
-
-  ssh ubuntu@"${container_ip}" bash -c "'
-  declare -i try_count=0
-  while [ \$((try_count++)) -lt ${NUM_ATTEMPTS} ]; do
-      echo \"Attempt \${try_count}/${NUM_ATTEMPTS}: Connecting to xpra server.\"
-      sleep 2
-      if xpra list | grep -o \"$display_num\"; then
-          break
-      fi
-  done
-  '"
-fi
-display_num=$(ssh ubuntu@"${container_ip}" xpra list | grep -oP -m 1 ":\d{2,}")
-if [ "$display_num" == "" ] ; then
-  print_err "No active xpra session found!"
-  exit 1
+ print_status "Iniciando una nueva instancia de xpra"
+ XPRA_APP_CMDLINE=$APP_CMDLINE  "$(dirname $0)/xpra_attach.sh" "${CONTAINER_NAME}" 
+else
+  print_status "Ejecutando $APP_CMDLINE en $container_ip"
+  ssh ubuntu@"${container_ip}" "DISPLAY=$display_num $APP_CMDLINE" &
 fi
 
-ssh ubuntu@"${container_ip}" "DISPLAY=$display_num $APP_CMDLINE"  &

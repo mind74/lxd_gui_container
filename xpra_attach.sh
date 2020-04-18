@@ -48,7 +48,7 @@ else
   conf=$(cat "${CONF_FOLDER}default.conf")
 fi
 
-paramaList=($(echo "${conf// /}" | grep -Po ".+"))
+paramaList=($(echo "${conf// /}" | grep -Po "^[ ]*[^#].+"))
 length=${#paramaList[@]}
 for ((i = 0; i != length; i++)); do
   p=$(echo "${paramaList[i]// /}")
@@ -82,8 +82,9 @@ if [ "$display_num" == "" ] ; then
       --start-via-proxy=no \
       --attach=no \
       --mdns=no \
-      --html=off || exit 1
-#      --no-pulseaudio 
+      --no-pulseaudio || exit 1
+#      --html=on \
+#      --bind-tcp=0.0.0.0:10000 || exit 1
 
   print_status "Waiting for Xpra server"
 
@@ -114,10 +115,12 @@ print_status "ejecutando [$APP_CMDLINE]"
 if [ "$APP_CMDLINE" == ""  ]; then
     xpra attach ssh:ubuntu@"${container_ip}"$display_num $params \
        --session-name=$CONTAINER_NAME \
+       --title="[@client-machine@] @title@" \
        || notify-send -i error "No se pudo atachar sesion XPRA en $CONTAINER_NAME"
 else
     xpra attach ssh:ubuntu@"${container_ip}"$display_num $params \
        --session-name=$CONTAINER_NAME \
+       --title="[@client-machine@] @title@" \
        --start=$APP_CMDLINE \
        || notify-send -i error "No se pudo atachar sesion XPRA en $CONTAINER_NAME"
 fi

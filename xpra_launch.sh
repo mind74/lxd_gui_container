@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # Wrapper to run an app in a xpra server.
+APP_FOLDER=$(dirname $0)
 
 
 # number of times to connect to xpra server
